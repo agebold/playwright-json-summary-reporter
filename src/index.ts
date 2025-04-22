@@ -1,4 +1,6 @@
 import * as fs from 'fs';
+import * as path from 'path';
+
 import {
   TestCase,
   TestResult,
@@ -100,7 +102,20 @@ class JSONSummaryReporter implements Reporter, Summary {
       return this.interrupted.indexOf(element) === index;
     });
 
-    fs.writeFileSync('./summary.json', JSON.stringify(this, null, '  '));
+    let fileName = 'summary.json';
+    let filePath = './'
+    
+    if (typeof process.env.PLAYWRIGHT_JSON_OUTPUT_DIR !== 'undefined') {
+      filePath = process.env.PLAYWRIGHT_JSON_OUTPUT_DIR;
+    }
+
+    if (typeof process.env.PLAYWRIGHT_JSON_OUTPUT_NAME !== 'undefined') {
+      fileName = process.env.PLAYWRIGHT_JSON_OUTPUT_NAME;
+    }
+
+    let outputFile = path.join(filePath, fileName);
+
+    fs.writeFileSync(outputFile, JSON.stringify(this, null, '  '));
   }
 }
 

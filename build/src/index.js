@@ -1,6 +1,7 @@
 "use strict";
 exports.__esModule = true;
 var fs = require("fs");
+var path = require("path");
 var JSONSummaryReporter = /** @class */ (function () {
     function JSONSummaryReporter() {
         this.durationInMS = -1;
@@ -73,7 +74,16 @@ var JSONSummaryReporter = /** @class */ (function () {
         this.interrupted = this.interrupted.filter(function (element, index) {
             return _this.interrupted.indexOf(element) === index;
         });
-        fs.writeFileSync('./summary.json', JSON.stringify(this, null, '  '));
+        var fileName = 'summary.json';
+        var filePath = './';
+        if (typeof process.env.PLAYWRIGHT_JSON_OUTPUT_DIR !== 'undefined') {
+            filePath = process.env.PLAYWRIGHT_JSON_OUTPUT_DIR;
+        }
+        if (typeof process.env.PLAYWRIGHT_JSON_OUTPUT_FILE !== 'undefined') {
+            fileName = process.env.PLAYWRIGHT_JSON_OUTPUT_FILE;
+        }
+        var outputFile = path.join(filePath, fileName);
+        fs.writeFileSync(outputFile, JSON.stringify(this, null, '  '));
     };
     return JSONSummaryReporter;
 }());
