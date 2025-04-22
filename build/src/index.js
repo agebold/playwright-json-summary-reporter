@@ -1,5 +1,5 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var fs = require("fs");
 var path = require("path");
 var JSONSummaryReporter = /** @class */ (function () {
@@ -79,12 +79,12 @@ var JSONSummaryReporter = /** @class */ (function () {
         if (typeof process.env.PLAYWRIGHT_JSON_OUTPUT_DIR !== 'undefined') {
             filePath = process.env.PLAYWRIGHT_JSON_OUTPUT_DIR;
         }
-        if (typeof process.env.PLAYWRIGHT_JSON_OUTPUT_FILE !== 'undefined') {
-            fileName = process.env.PLAYWRIGHT_JSON_OUTPUT_FILE;
+        if (typeof process.env.PLAYWRIGHT_JSON_OUTPUT_NAME !== 'undefined') {
+            fileName = process.env.PLAYWRIGHT_JSON_OUTPUT_NAME;
         }
         var outputFile = path.join(filePath, fileName);
         fs.writeFileSync(outputFile, JSON.stringify(this, null, '  '));
     };
     return JSONSummaryReporter;
 }());
-exports["default"] = JSONSummaryReporter;
+exports.default = JSONSummaryReporter;
