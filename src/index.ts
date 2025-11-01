@@ -17,6 +17,7 @@ export interface Summary {
   interrupted: string[];
   timedOut: string[];
   flakey: string[];
+  retries: Record<string, number>;
 
   status: FullResult['status'] | 'unknown' | 'warned' | 'skipped';
 }
@@ -30,6 +31,7 @@ class JSONSummaryReporter implements Reporter, Summary {
   interrupted: string[] = [];
   timedOut: string[] = [];
   flakey: string[] = [];
+  retries: Record<string, number> = {};
 
   status: Summary['status'] = 'unknown';
   startedAt = 0;
@@ -62,6 +64,11 @@ class JSONSummaryReporter implements Reporter, Summary {
       !['passed', 'skipped'].includes(result.status) && t.includes('@warn')
         ? 'warned'
         : result.status;
+
+    // Store retry count for this test
+    if (result.retry > 0) {
+      this.retries[z] = result.retry;
+    }
 
     // Logic to push the results into the correct array
     if (result.status === 'passed' && result.retry >= 1) {

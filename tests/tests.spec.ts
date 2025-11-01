@@ -28,4 +28,10 @@ test.describe('is a passing test', () => {
   test('is a test that will timeout test 8 @warn', async () => {
     expect(true).toBeTruthy();
   });
+  test('is a flaky test that passes on first retry', async ({}, testInfo) => {
+    expect(testInfo.retry).toBeGreaterThanOrEqual(1);
+  });
+  test('is a test that always passes (no retries)', async () => {
+    expect(true).toBeTruthy();
+  });
 });

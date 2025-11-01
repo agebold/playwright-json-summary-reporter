@@ -12,6 +12,7 @@ var JSONSummaryReporter = /** @class */ (function () {
         this.interrupted = [];
         this.timedOut = [];
         this.flakey = [];
+        this.retries = {};
         this.status = 'unknown';
         this.startedAt = 0;
     }
@@ -40,6 +41,10 @@ var JSONSummaryReporter = /** @class */ (function () {
         var status = !['passed', 'skipped'].includes(result.status) && t.includes('@warn')
             ? 'warned'
             : result.status;
+        // Store retry count for this test
+        if (result.retry > 0) {
+            this.retries[z] = result.retry;
+        }
         // Logic to push the results into the correct array
         if (result.status === 'passed' && result.retry >= 1) {
             this.flakey.push(z);
