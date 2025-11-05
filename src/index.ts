@@ -8,15 +8,20 @@ import {
   FullResult,
 } from '@playwright/test/reporter';
 
+export interface TestEntry {
+  location: string;
+  name: string;
+}
+
 export interface Summary {
   durationInMS: number;
-  passed: string[];
-  skipped: string[];
-  failed: string[];
-  warned: string[];
-  interrupted: string[];
-  timedOut: string[];
-  flakey: string[];
+  passed: TestEntry[];
+  skipped: TestEntry[];
+  failed: TestEntry[];
+  warned: TestEntry[];
+  interrupted: TestEntry[];
+  timedOut: TestEntry[];
+  flakey: TestEntry[];
   retries: Record<string, number>;
 
   status: FullResult['status'] | 'unknown' | 'warned' | 'skipped';
@@ -24,13 +29,13 @@ export interface Summary {
 
 class JSONSummaryReporter implements Reporter, Summary {
   durationInMS = -1;
-  passed: string[] = [];
-  skipped: string[] = [];
-  failed: string[] = [];
-  warned: string[] = [];
-  interrupted: string[] = [];
-  timedOut: string[] = [];
-  flakey: string[] = [];
+  passed: TestEntry[] = [];
+  skipped: TestEntry[] = [];
+  failed: TestEntry[] = [];
+  warned: TestEntry[] = [];
+  interrupted: TestEntry[] = [];
+  timedOut: TestEntry[] = [];
+  flakey: TestEntry[] = [];
   retries: Record<string, number> = {};
 
   status: Summary['status'] = 'unknown';
@@ -54,29 +59,35 @@ class JSONSummaryReporter implements Reporter, Summary {
     }
 
     // This will publish the file name + line number test begins on
-    const z = `${fileName[0]}:${test.location.line}:${test.location.column}`;
+    const location = `${fileName[0]}:${test.location.line}:${test.location.column}`;
 
     // Using the t variable in the push will push a full test name + test description
-    const t = title.join(' > ');
+    const name = title.join(' > ');
+
+    // Create the test entry object
+    const testEntry: TestEntry = {
+      location: location,
+      name: name
+    };
 
     // Set the status
     const status =
-      !['passed', 'skipped'].includes(result.status) && t.includes('@warn')
+      !['passed', 'skipped'].includes(result.status) && name.includes('@warn')
         ? 'warned'
         : result.status;
 
     // Store retry count for this test
     if (result.retry > 0) {
-      this.retries[z] = result.retry;
+      this.retries[location] = result.retry;
     }
 
     // Logic to push the results into the correct array
     if (result.status === 'passed' && result.retry >= 1) {
-      this.flakey.push(z);
+      this.flakey.push(testEntry);
     } else {
-      this[status].push(z);
+      this[status].push(testEntry);
     }
-    this[status].push(z);
+    this[status].push(testEntry);
   }
 
   onEnd(result: FullResult) {
@@ -85,28 +96,28 @@ class JSONSummaryReporter implements Reporter, Summary {
 
     // removing duplicate tests from passed array
     this.passed = this.passed.filter((element, index) => {
-      return this.passed.indexOf(element) === index;
+      return this.passed.findIndex(e => e.location === element.location) === index;
     });
 
     // removing duplicate tests from the failed array
     this.failed = this.failed.filter((element, index) => {
-      if (!this.passed.includes(element))
-        return this.failed.indexOf(element) === index;
+      if (!this.passed.some(e => e.location === element.location))
+        return this.failed.findIndex(e => e.location === element.location) === index;
     });
 
     // removing duplicate tests from the skipped array
     this.skipped = this.skipped.filter((element, index) => {
-      return this.skipped.indexOf(element) === index;
+      return this.skipped.findIndex(e => e.location === element.location) === index;
     });
 
     // removing duplicate tests from the timedOut array
     this.timedOut = this.timedOut.filter((element, index) => {
-      return this.timedOut.indexOf(element) === index;
+      return this.timedOut.findIndex(e => e.location === element.location) === index;
     });
 
     // removing duplicate tests from the interrupted array
     this.interrupted = this.interrupted.filter((element, index) => {
-      return this.interrupted.indexOf(element) === index;
+      return this.interrupted.findIndex(e => e.location === element.location) === index;
     });
 
     let fileName = 'summary.json';

@@ -34,25 +34,30 @@ var JSONSummaryReporter = /** @class */ (function () {
             }
         }
         // This will publish the file name + line number test begins on
-        var z = "".concat(fileName[0], ":").concat(test.location.line, ":").concat(test.location.column);
+        var location = "".concat(fileName[0], ":").concat(test.location.line, ":").concat(test.location.column);
         // Using the t variable in the push will push a full test name + test description
-        var t = title.join(' > ');
+        var name = title.join(' > ');
+        // Create the test entry object
+        var testEntry = {
+            location: location,
+            name: name
+        };
         // Set the status
-        var status = !['passed', 'skipped'].includes(result.status) && t.includes('@warn')
+        var status = !['passed', 'skipped'].includes(result.status) && name.includes('@warn')
             ? 'warned'
             : result.status;
         // Store retry count for this test
         if (result.retry > 0) {
-            this.retries[z] = result.retry;
+            this.retries[location] = result.retry;
         }
         // Logic to push the results into the correct array
         if (result.status === 'passed' && result.retry >= 1) {
-            this.flakey.push(z);
+            this.flakey.push(testEntry);
         }
         else {
-            this[status].push(z);
+            this[status].push(testEntry);
         }
-        this[status].push(z);
+        this[status].push(testEntry);
     };
     JSONSummaryReporter.prototype.onEnd = function (result) {
         var _this = this;
@@ -60,24 +65,24 @@ var JSONSummaryReporter = /** @class */ (function () {
         this.status = result.status;
         // removing duplicate tests from passed array
         this.passed = this.passed.filter(function (element, index) {
-            return _this.passed.indexOf(element) === index;
+            return _this.passed.findIndex(function (e) { return e.location === element.location; }) === index;
         });
         // removing duplicate tests from the failed array
         this.failed = this.failed.filter(function (element, index) {
-            if (!_this.passed.includes(element))
-                return _this.failed.indexOf(element) === index;
+            if (!_this.passed.some(function (e) { return e.location === element.location; }))
+                return _this.failed.findIndex(function (e) { return e.location === element.location; }) === index;
         });
         // removing duplicate tests from the skipped array
         this.skipped = this.skipped.filter(function (element, index) {
-            return _this.skipped.indexOf(element) === index;
+            return _this.skipped.findIndex(function (e) { return e.location === element.location; }) === index;
         });
         // removing duplicate tests from the timedOut array
         this.timedOut = this.timedOut.filter(function (element, index) {
-            return _this.timedOut.indexOf(element) === index;
+            return _this.timedOut.findIndex(function (e) { return e.location === element.location; }) === index;
         });
         // removing duplicate tests from the interrupted array
         this.interrupted = this.interrupted.filter(function (element, index) {
-            return _this.interrupted.indexOf(element) === index;
+            return _this.interrupted.findIndex(function (e) { return e.location === element.location; }) === index;
         });
         var fileName = 'summary.json';
         var filePath = './';
